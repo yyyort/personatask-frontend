@@ -1,9 +1,4 @@
-import Image from "next/image";
 
 export default function Home() {
-  return (
-    <div>
-      home
-    </div>
-  );
+  return <div className="min-h-full min-w-full">hello</div>;
 }

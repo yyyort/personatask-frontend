@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
-import HomeWrapper from "./home-wrapper";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/context/authContext";
 
 export default function RootLayout({
   children,
@@ -10,15 +9,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange 
+          disableTransitionOnChange
         >
-          <HomeWrapper>{children}</HomeWrapper>
+          <AuthProvider>{children}</AuthProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

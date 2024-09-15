@@ -12,7 +12,7 @@ export default function Sidebar() {
   return (
     <div
       className={cn(
-        "h-screen bg-slate-200 flex flex-col justify-between items-center py-5 ease-in-out duration-300",
+        "h-screen bg-slate-200 flex flex-col justify-between items-center py-5 ease-in-out duration-500",
         expanded ? "w-[8rem]" : "w-[5rem]"
       )}
     >
@@ -28,7 +28,7 @@ export default function Sidebar() {
             <ModeToggle />
 
             {/* expanded */}
-            <div className="absolute top-0 -right-10 ease-in-out duration-300">
+            <div className="absolute top-0 -right-10 ease-in-out duration-500">
               <button
                 className="bg-slate-200 text-black p-2 rounded-md"
                 onClick={() => setExpanded(!expanded)}
