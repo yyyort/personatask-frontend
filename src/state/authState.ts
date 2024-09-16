@@ -1,6 +1,5 @@
 import { GetUserType } from '@/model/users.model';
 import { SignInApi, SignOutApi } from '@/service/authService';
-import { useRouter } from 'next/navigation';
 import { create } from 'zustand';
 
 type AuthState = {
@@ -15,8 +14,11 @@ type AuthState = {
 
 
 export const useAuthStore = create<AuthState>((set) => ({
-    token: null,
-    user: null,
+    token: "token",
+    user: {
+        id: "1",
+        email: "test@gmail.com",
+    },
     login: async (email, password) => {
         try {
             // make api call
