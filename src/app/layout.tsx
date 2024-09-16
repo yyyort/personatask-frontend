@@ -1,7 +1,8 @@
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/context/authContext";
+
+import ReactQueryProvider from "@/lib/react-query-provider";
 
 export default function RootLayout({
   children,
@@ -17,7 +18,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>{children}</AuthProvider>
+          <ReactQueryProvider>{children}</ReactQueryProvider>
           <Toaster />
         </ThemeProvider>
       </body>

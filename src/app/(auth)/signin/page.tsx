@@ -1,4 +1,3 @@
-import { AuthProvider } from "@/context/authContext";
 import SignInForm from "@/components/auth/signin-form";
 
 export default function SignIn() {
@@ -21,12 +20,9 @@ export default function SignIn() {
         </section>
 
         <section className="flex flex-col">
-          <AuthProvider>
-            <SignInForm />
-          </AuthProvider>
+          <SignInForm />
         </section>
       </main>
     </>
   );
 }
-

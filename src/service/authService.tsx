@@ -2,7 +2,7 @@ import { CreateUserType, GetUserType, SignInUserType } from "@/model/users.model
 
 export const SignInApi = async (formData: SignInUserType) => {
     try {
-        const data = await fetch('api/user/signin', {
+        const res = await fetch('api/user/signin', {
             method: "POST",
             credentials: "include",
             headers: {
@@ -11,18 +11,7 @@ export const SignInApi = async (formData: SignInUserType) => {
             body: JSON.stringify({ email: formData.email, password: formData.password })
         })
 
-        //check if status is 200 or
-        if (!data.ok) {
-            const errorMessage = await data.json();
-            throw new Error(errorMessage.message);
-        }
-
-        const responseData: { id: string; email: string; } = await data.json();
-        
-        
-       
-
-        return responseData;
+       return res;
     } catch (error: any) {
         console.error(error)
         throw error;
@@ -66,7 +55,7 @@ export const SignOutApi = async () => {
             }
         })
 
-        return data.json()
+        return data;
     } catch (error: any) {
         console.error(error)
         throw error;

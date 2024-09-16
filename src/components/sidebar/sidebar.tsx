@@ -1,10 +1,10 @@
 "use client";
-import { ChevronLeft, ChevronRight, LogOut, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, User } from "lucide-react";
 import SidebarLinks from "./sidebar-links";
-import { Button } from "../ui/button";
 import { ModeToggle } from "../ui/mode-toggle";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import Logout from "./logout";
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(true);
@@ -46,15 +46,7 @@ export default function Sidebar() {
       </div>
 
       {/* logout */}
-      <div>
-        {expanded ? (
-          <Button variant={"outline"}>Logout</Button>
-        ) : (
-          <button>
-            <LogOut />
-          </button>
-        )}
-      </div>
+      <Logout isExpanded={expanded} />
     </div>
   );
 }

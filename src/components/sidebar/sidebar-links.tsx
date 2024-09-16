@@ -35,7 +35,7 @@ export default function SidebarLinks({ isExpanded }: { isExpanded: boolean }) {
   return (
     <>
       {links.map((link: linkType, index: number) => (
-        <Link href={link.href} className="flex gap-2">
+        <Link href={link.href} className="flex gap-2" key={link.name}>
           {link.icon}
           <p className={cn("", isExpanded ? "" : "hidden")}>{link.name}</p>
         </Link>

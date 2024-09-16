@@ -1,12 +1,17 @@
 "use client";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/context/authContext";
 import { cn } from "@/lib/utils";
 import { SignInUserSchema, SignInUserType } from "@/model/users.model";
+import { useAuthStore } from "@/state/authState";
+import { useToast } from "@/hooks/use-toast";
+import { type } from "os";
+import { useRouter } from "next/navigation";
 
 export default function SignInForm() {
-  const { SignIn } = useAuth();
+  const signIn = useAuthStore((state) => state.login);
+  const { toast } = useToast();
+  const router = useRouter();
 
   const {
     register,
@@ -23,15 +28,26 @@ export default function SignInForm() {
 
   const onSubmit: SubmitHandler<SignInUserType> = async (data) => {
     try {
-      SignIn(data);
-      isSubmitting
+      await signIn(data.email, data.password);
+
+      router.push("/");
+      toast({
+        title: "Success",
+        description: "You have successfully signed in",
+      });
     } catch (error: any) {
-      setError("email", {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      })
+      setError("root", {
         type: "manual",
         message: error.message,
       });
     }
   };
+  
   return (
     <>
       <form
@@ -59,6 +75,10 @@ export default function SignInForm() {
           <span className="text-red-500">{errors.password.message}</span>
         )}
 
+        {errors.root && (
+          <span className="text-red-500">{errors.root.message}</span>
+        )}
+
         <button
           disabled={isSubmitting}
           type="submit"
@@ -67,7 +87,7 @@ export default function SignInForm() {
             isSubmitting && "bg-slate-50"
           )}
         >
-          {isSubmitting ? "..." : "submit"}
+          {isSubmitting ? "submitting" : "submit"}
         </button>
       </form>
     </>
