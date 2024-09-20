@@ -1,5 +1,6 @@
 
 import AddTask from "@/components/tasks/add-task";
+import TaskKanban from "@/components/tasks/task-kanban";
 import { TasksList } from "@/components/tasks/tasks-list";
 
 import React from "react";
@@ -12,7 +13,7 @@ export default function Tasks() {
         <AddTask />
       </div>
 
-      <TasksList />
+      <TaskKanban />
     </div>
   );
 }

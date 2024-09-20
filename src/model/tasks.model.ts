@@ -6,8 +6,8 @@ export const TaskModelSchema = z.object({
     name: z.string(),
     description: z.string().nullable().optional(),
     status: z.enum(["due", "done", "overdue"]),
-    timeTodo: z.date().nullable().optional(),
-    deadline: z.date().nullable().optional(),
+    timeTodo: z.string().nullable().optional(),
+    deadline: z.string().nullable().optional(),
     createdAt: z.date(),
     updatedAt: z.date(),
 });
@@ -18,8 +18,8 @@ export const UpdateTaskSchema = z.object({
     name: z.string().optional(),
     description: z.string().nullable().optional(),
     status: z.enum(["due", "done", "overdue"]).optional(),
-    timeTodo: z.date().nullable().optional(),
-    deadline: z.date().nullable().optional(),
+    timeTodo: z.string().nullable().optional(),
+    deadline: z.string().nullable().optional(),
 });
 
 export type TaskModelType = z.infer<typeof TaskModelSchema>;

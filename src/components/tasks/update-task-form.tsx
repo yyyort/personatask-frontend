@@ -1,5 +1,11 @@
 "use client";
-import { CreateTaskSchema, CreateTaskType } from "@/model/tasks.model";
+import {
+  CreateTaskSchema,
+  CreateTaskType,
+  GetTaskType,
+  UpdateTaskSchema,
+  UpdateTaskType,
+} from "@/model/tasks.model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -18,31 +24,33 @@ import {
 import { useTasksStore } from "@/state/tasksState";
 import { useToast } from "@/hooks/use-toast";
 
-export default function AddTaskForm() {
+export default function UpdateTaskForm({ task }: { task: GetTaskType }) {
   const { toast } = useToast();
-  const addTask = useTasksStore((state) => state.addTask);
+  const updateTask = useTasksStore((state) => state.updateTask);
 
-  const form = useForm<z.infer<typeof CreateTaskSchema>>({
-    resolver: zodResolver(CreateTaskSchema),
+  const form = useForm<z.infer<typeof UpdateTaskSchema>>({
+    resolver: zodResolver(UpdateTaskSchema),
     defaultValues: {
-      name: "",
-      description: "",
-      status: "due",
+      name: task.name,
+      description: task.description,
+      status: task.status,
+      timeTodo: task.timeTodo,
+      deadline: task.deadline,
     },
   });
 
-  function onSubmit(data: CreateTaskType) {
+  function onSubmit(data: UpdateTaskType) {
     try {
-      addTask(data);
+      updateTask(data, task.id);
       form.reset();
       toast({
-        title: "Task Added",
-        description: "Task has been added successfully",
+        title: "Task Updated",
+        description: "Task has been updated successfully",
       });
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Task Add Failed",
+        title: "Task Update Failed",
         description: error.message,
       });
       console.error(error);
@@ -165,7 +173,7 @@ export default function AddTaskForm() {
           disabled={form.formState.isSubmitting}
           className="ml-auto mt-2"
         >
-          Add Task
+          Update Task
         </Button>
       </form>
     </Form>
