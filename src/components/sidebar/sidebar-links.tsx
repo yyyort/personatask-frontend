@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { House, StickyNote, Repeat2, ListCheck } from "lucide-react";
 import Link from "next/link";
+import { Button } from "../ui/button";
 
 type linkType = {
   name: string;
@@ -21,7 +22,7 @@ const links: linkType[] = [
   },
   {
     name: "Routine",
-    href: "/routine",
+    href: "/routines",
     icon: <Repeat2 />,
   },
   {
@@ -35,10 +36,13 @@ export default function SidebarLinks({ isExpanded }: { isExpanded: boolean }) {
   return (
     <>
       {links.map((link: linkType, index: number) => (
+        <Button variant="link" key={index} className="flexs items-center justify-start">
+          
         <Link href={link.href} className="flex gap-2" key={link.name}>
           {link.icon}
           <p className={cn("", isExpanded ? "" : "hidden")}>{link.name}</p>
         </Link>
+        </Button>
       ))}
     </>
   );

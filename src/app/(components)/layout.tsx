@@ -8,11 +8,11 @@ export default function Layout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-full min-w-full flex">
+    <div className="min-h-screen min-w-full flex">
       <nav>
         <Sidebar />
       </nav>
-      <main className="w-full min-h-full p-10">
+      <main className="w-full max-h-screen p-10 overflow-auto">
         <PathBreadcrumbs />
         <AuthWrapper>{children}</AuthWrapper>
       </main>

@@ -20,7 +20,7 @@ export function TaskContainer({ task }: { task: GetTaskType }) {
 
   return (
     <>
-      <div className="flex flex-row items-center gap-2 bg-slate-100 px-2 py-1 rounded-md w-56 h-12 overflow-hidden hover:bg-slate-200">
+      <div className="flex flex-row items-center gap-2 bg-slate-100 px-2 py-1 rounded-md h-12 overflow-hidden hover:bg-slate-200">
         <div className="flex items-center">
           <Checkbox
             className="hover:bg-slate-800"
@@ -33,10 +33,8 @@ export function TaskContainer({ task }: { task: GetTaskType }) {
 
         <div className="flex items-center gap-2">
           <div className="flex flex-row items-center gap-2">
-            <p className="text-sm font-semibold">
-              {task.name.length > 10
-                ? task.name.slice(0, 10) + "..."
-                : task.name}
+            <p className="text-sm font-semibold overflow-hidden">
+              {task.name}
             </p>
           </div>
         </div>
