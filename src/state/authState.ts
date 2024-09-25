@@ -1,5 +1,4 @@
-import { CreateUserType, GetUserType } from '@/model/users.model';
-import { SignInApi, SignOutApi, SignUpApi } from '@/service/authService';
+import { RefreshTokenApi } from '@/service/authService';
 import { create } from 'zustand';
 
 type AuthState = {
@@ -8,8 +7,7 @@ type AuthState = {
         id: string;
         email: string;
     } | null;
-    setToken: (token: string) => void;
-    setUser: (user: GetUserType) => void;
+    refreshToken: () => void;
 };
 
 
@@ -19,6 +17,21 @@ export const useAuthStore = create<AuthState>((set) => ({
         id: "",
         email: "",
     },
-    setToken: (token) => set((state) => ({ ...state, token: token })),
-    setUser: (user) => set((state) => ({ ...state, user: user })),
+    refreshToken: async () => {
+        try {
+            const res = await RefreshTokenApi() 
+
+            set((state) => ({ ...state, token: res.token }));
+
+            console.log(res);
+            set((state) => ({
+                ...state,
+                user: res.user,
+                token: res.token
+            }));
+        } catch (error: unknown) {
+            console.error(error);
+            throw error;
+        }
+    },
 }));

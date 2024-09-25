@@ -39,11 +39,11 @@ export default function AddTaskForm() {
         title: "Task Added",
         description: "Task has been added successfully",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Task Add Failed",
-        description: error.message,
+        description: (error as Error).message,
       });
       console.error(error);
     }

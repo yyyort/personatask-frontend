@@ -1,17 +1,7 @@
 "use client";
 import { GetTaskType } from "@/model/tasks.model";
 import { useTasksStore } from "@/state/tasksState";
-import { Checkbox } from "../ui/checkbox";
 import { TaskContainer } from "./task-container";
-import { Dialog } from "@radix-ui/react-dialog";
-import {
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
-import UpdateTaskForm from "./update-task-form";
 
 export function TasksList() {
   const tasks = useTasksStore((state) => state.tasks);

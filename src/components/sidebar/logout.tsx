@@ -3,12 +3,14 @@ import React from 'react'
 import { Button } from '../ui/button';
 import { LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/state/authState';
 import { useToast } from '@/hooks/use-toast';
+import { SignOutApi } from '@/service/authService';
 
 export default function Logout({isExpanded}: Readonly<{isExpanded: boolean}>) {
     const { toast } = useToast();
-    const logout = useAuthStore((state) => state.logout);
+    const logout = async () => {
+        await SignOutApi();
+    }
 
     const onLogout = async () => {
         try {
@@ -17,11 +19,11 @@ export default function Logout({isExpanded}: Readonly<{isExpanded: boolean}>) {
                 title: "Success",
                 description: "You have successfully logged out",
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: error.message,
+                description: (error as Error).message,
             });
         }
       }

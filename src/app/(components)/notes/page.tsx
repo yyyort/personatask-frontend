@@ -1,13 +1,30 @@
+"use client";
 import { Button } from "@/components/ui/button";
-import { GetNoteType } from "@/model/notes.model";
-import { EllipsisVertical, Eye, Plus } from "lucide-react";
+import { NoteModelType } from "@/model/notes.model";
+import { GetNoteService } from "@/service/notesService";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { EllipsisVertical, Plus } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import { useRouter } from "next/navigation";
+import { GetUserType } from "@/model/users.model";
 
-export default async function Notes() {
-  const notes = await fetch("http://localhost:3000/api/notes", {
-    cache: "no-cache",
-  }).then((res) => res.json());
+export default function Notes() {
+  const queryClient = useQueryClient();
+
+  const data:
+    | {
+        token: string;
+        user: GetUserType;
+      }
+    | undefined = queryClient.getQueryData(["refreshToken"]);
+
+  const { data: notes } = useQuery({
+    queryFn: () => GetNoteService(data!.user, data!.token),
+    queryKey: ["notes"],
+    enabled: !!data,
+    staleTime: Infinity,
+  });
 
   return (
     <div className="w-full max-h-full flex flex-col gap-2">
@@ -21,7 +38,7 @@ export default async function Notes() {
         </Link>
       </div>
       <div className="columns-4 gap-4">
-        {notes.map((note: GetNoteType) => (
+        {notes?.map((note: NoteModelType) => (
           <NoteContainer key={note.id} note={note} />
         ))}
       </div>
@@ -29,13 +46,17 @@ export default async function Notes() {
   );
 }
 
-export function NoteContainer({ note }: { note: GetNoteType }) {
+export function NoteContainer({ note }: { note: NoteModelType }) {
+  const router = useRouter();
+
   return (
     <>
       <div
         className="flex flex-col bg-slate-50 my-4 p-4 gap-2 overflow-hidden rounded-md
        hover:shadow-lg transition-shadow duration-100 ease-in-out
+        cursor-pointer
        "
+        onClick={() => router.push(`/notes/${note.id}`)}
       >
         <div className="flex items-center justify-between">
           <p className="text-lg font-semibold">{note.title}</p>

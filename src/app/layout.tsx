@@ -1,6 +1,7 @@
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
+import React from "react";
 
 import ReactQueryProvider from "@/lib/react-query-provider";
 

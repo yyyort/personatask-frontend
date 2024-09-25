@@ -4,13 +4,12 @@ export const NoteModelSchema = z.object({
     id: z.number(),
     userId: z.string(),
     title: z.string(),
-    content: z.string().nullable().optional(),
+    content: z.string().optional().default(""),
     createdAt: z.date(),
     updatedAt: z.date(),
 })
 
 export const CreateNoteSchema = NoteModelSchema.pick({ title: true, content: true });
-export const GetNoteSchema = NoteModelSchema.omit({ createdAt: true, updatedAt: true });
 export const UpdateNoteSchema = z.object({
     title: z.string().optional(),
     content: z.string().nullable().optional(),
@@ -19,4 +18,4 @@ export const UpdateNoteSchema = z.object({
 
 export type NoteModelType = z.infer<typeof NoteModelSchema>;
 export type CreateNoteType = z.infer<typeof CreateNoteSchema>;
-export type GetNoteType = z.infer<typeof GetNoteSchema>;
+export type UpdateNoteType = z.infer<typeof UpdateNoteSchema>;

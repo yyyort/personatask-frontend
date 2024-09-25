@@ -2,7 +2,7 @@ import { CreateUserType, GetUserType, SignInUserType } from "@/model/users.model
 
 export const SignInApi = async (formData: SignInUserType) => {
     try {
-        const res = await fetch('api/user/signin', {
+        const res = await fetch('/api/user/signin', {
             method: "POST",
             credentials: "include",
             headers: {
@@ -24,7 +24,7 @@ export const SignInApi = async (formData: SignInUserType) => {
         } = await res.json();
 
         return parsedData;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(error)
         throw error;
     }
@@ -32,7 +32,7 @@ export const SignInApi = async (formData: SignInUserType) => {
 
 export const SignUpApi = async (formData: CreateUserType) => {
     try {
-        const data = await fetch('api/user/signup', {
+        const data = await fetch('/api/user/signup', {
             method: "POST",
             credentials: "include",
             headers: {
@@ -57,7 +57,7 @@ export const SignUpApi = async (formData: CreateUserType) => {
         } = await data.json();
 
         return parsedData;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(error)
         throw error;
     }
@@ -65,7 +65,7 @@ export const SignUpApi = async (formData: CreateUserType) => {
 
 export const SignOutApi = async () => {
     try {
-        const data = await fetch('api/user/signout', {
+        const data = await fetch('/api/user/signout', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -73,7 +73,32 @@ export const SignOutApi = async () => {
         })
 
         return data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+        console.error(error)
+        throw error;
+    }
+}
+
+export const RefreshTokenApi = async () => {
+    try {
+        const data = await fetch('/api/user/refreshToken', {
+            method: "POST",
+            credentials: "include",
+        })
+
+        //check if status is 200 or ok
+        if (!data.ok) {
+            const errorMessage = await data.json();
+            throw new Error(errorMessage.message);
+        }
+
+        const parsedData: {
+            token: string;
+            user: GetUserType;
+        } = await data.json();
+
+        return parsedData;
+    } catch (error) {
         console.error(error)
         throw error;
     }

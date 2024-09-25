@@ -3,7 +3,6 @@
 import {
   CreateUserSchema,
   CreateUserType,
-  SignInUserType,
 } from "@/model/users.model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
@@ -15,16 +14,14 @@ import { Button } from "../ui/button";
 import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { SignInApi, SignUpApi } from "@/service/authService";
+import { SignUpApi } from "@/service/authService";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/state/authState";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const setToken = useAuthStore((state) => state.setToken);
 
   const form = useForm<z.infer<typeof CreateUserSchema>>({
     resolver: zodResolver(CreateUserSchema),
@@ -37,7 +34,7 @@ export default function SignUpForm() {
 
   const onSubmit: SubmitHandler<CreateUserType> = async (data) => {
     try {
-      const res = await SignUpApi(data);
+      await SignUpApi(data);
 
       toast({
         variant: "default",
@@ -45,19 +42,14 @@ export default function SignUpForm() {
         description: "User created successfully",
       });
 
-      setToken(res.token);
-
-      console.log(res);
-
       router.push("/");
-
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message, 
-      })
+        description: (error as Error).message,
+      });
     }
   };
 

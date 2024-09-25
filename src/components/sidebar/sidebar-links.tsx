@@ -2,11 +2,12 @@ import { cn } from "@/lib/utils";
 import { House, StickyNote, Repeat2, ListCheck } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import React from "react";
 
 type linkType = {
   name: string;
   href: string;
-  icon: JSX.Element;
+  icon: React.ReactNode;
 };
 
 const links: linkType[] = [
