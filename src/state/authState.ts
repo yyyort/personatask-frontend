@@ -1,5 +1,5 @@
-import { GetUserType } from '@/model/users.model';
-import { SignInApi, SignOutApi } from '@/service/authService';
+import { CreateUserType, GetUserType } from '@/model/users.model';
+import { SignInApi, SignOutApi, SignUpApi } from '@/service/authService';
 import { create } from 'zustand';
 
 type AuthState = {
@@ -8,57 +8,17 @@ type AuthState = {
         id: string;
         email: string;
     } | null;
-    login: (email: string, password: string) => Promise<void>;
-    logout: () => Promise<void>;
+    setToken: (token: string) => void;
+    setUser: (user: GetUserType) => void;
 };
 
 
 export const useAuthStore = create<AuthState>((set) => ({
-    token: "token",
+    token: "",
     user: {
-        id: "1",
-        email: "test@gmail.com",
+        id: "",
+        email: "",
     },
-    login: async (email, password) => {
-        try {
-            // make api call
-            const res = await SignInApi({ email, password });
-
-            if (!res.ok) {
-                throw new Error('Unable to login');
-            }
-
-            const data: GetUserType = await res.json();
-
-            set({
-                token: "token",
-                user: {
-                    id: data.id,
-                    email: data.email,
-                },
-            });
-        } catch (error: any) {
-            console.error(error);
-            throw error;
-        }
-
-    },
-    logout: async () => {
-        // make api call
-        try {
-            const res = await SignOutApi();
-
-            if (!res.ok) {
-                throw new Error('Unable to logout');
-            }
-        } catch (error: any) {
-            console.error(error);
-            throw error;
-        }
-
-        set({
-            token: null,
-            user: null,
-        });
-    }
+    setToken: (token) => set((state) => ({ ...state, token: token })),
+    setUser: (user) => set((state) => ({ ...state, user: user })),
 }));

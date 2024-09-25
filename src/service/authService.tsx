@@ -11,7 +11,19 @@ export const SignInApi = async (formData: SignInUserType) => {
             body: JSON.stringify({ email: formData.email, password: formData.password })
         })
 
-       return res;
+        //check if status is 200 or ok
+
+        if (!res.ok) {
+            const errorMessage = await res.json();
+            throw new Error(errorMessage.message);
+        }
+
+        const parsedData: {
+            token: string;
+            user: GetUserType;
+        } = await res.json();
+
+        return parsedData;
     } catch (error: any) {
         console.error(error)
         throw error;
@@ -39,7 +51,12 @@ export const SignUpApi = async (formData: CreateUserType) => {
             throw new Error(errorMessage.message);
         }
 
-        return data.json()
+        const parsedData: {
+            token: string;
+            user: GetUserType;
+        } = await data.json();
+
+        return parsedData;
     } catch (error: any) {
         console.error(error)
         throw error;

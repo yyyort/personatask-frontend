@@ -3,7 +3,6 @@
 import {
   CreateUserSchema,
   CreateUserType,
-  SignInUserSchema,
   SignInUserType,
 } from "@/model/users.model";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,27 +15,29 @@ import { Button } from "../ui/button";
 import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { SignInApi } from "@/service/authService";
+import { SignInApi, SignUpApi } from "@/service/authService";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/state/authState";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const setToken = useAuthStore((state) => state.setToken);
 
-  const form = useForm<z.infer<typeof SignInUserSchema>>({
-    resolver: zodResolver(SignInUserSchema),
+  const form = useForm<z.infer<typeof CreateUserSchema>>({
+    resolver: zodResolver(CreateUserSchema),
     defaultValues: {
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  const onSubmit: SubmitHandler<SignInUserType> = async (data) => {
+  const onSubmit: SubmitHandler<CreateUserType> = async (data) => {
     try {
-      const res = await SignInApi(data);
+      const res = await SignUpApi(data);
 
       toast({
         variant: "default",
@@ -49,13 +50,14 @@ export default function SignUpForm() {
       console.log(res);
 
       router.push("/");
+
     } catch (error: any) {
       console.error(error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
-      });
+        description: error.message, 
+      })
     }
   };
 
@@ -132,18 +134,57 @@ export default function SignUpForm() {
           )}
         />
 
+        {/* confirm password field */}
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field, fieldState }) => (
+            <div className="flex">
+              <FormItem>
+                <FormLabel className="text-xl">Confirm Password</FormLabel>
+                <FormControl>
+                  <div>
+                    <div className="flex">
+                      <Input
+                        {...field}
+                        type={showConfirmPassword ? "text" : "password"}
+                        className="w-[30rem] h-12 bg-white text-lg font-light"
+                      />
+                      <span
+                        className="flex justify-around items-center"
+                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOpenIcon className="absolute mr-10" />
+                        ) : (
+                          <EyeClosedIcon className="absolute mr-10" />
+                        )}
+                      </span>
+                    </div>
+
+                    {fieldState.error && (
+                      <div className="text-red-500 text-sm my-2">
+                        {fieldState.error.message}
+                      </div>
+                    )}
+                  </div>
+                </FormControl>
+              </FormItem>
+            </div>
+          )}
+        />
         <div className="flex justify-between w-full">
           <Button
             type="submit"
             variant={"outline"}
             className="text-lg p-5 mt-2"
           >
-            Sign In
+            Sign Up
           </Button>
 
-          <Link href="/signup">
+          <Link href="/signin">
             <Button variant={"link"} className="text-lg p-5 m-2">
-              Sign Up
+              Sign In
             </Button>
           </Link>
         </div>

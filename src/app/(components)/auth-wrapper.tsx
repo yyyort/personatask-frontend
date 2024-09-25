@@ -7,13 +7,16 @@ export default function AuthWrapper({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const token = useAuthStore((state) => state.token);
+  const setToken = useAuthStore((state) => state.setToken);
+
   const router = useRouter();
+ 
   useEffect(() => {
-    console.log("token", token);
     if (!token) {
       router.push("/signin");
     }
   }, [token]);
+
 
   return <>{children}</>;
 }
