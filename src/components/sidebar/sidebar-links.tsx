@@ -38,7 +38,7 @@ export default function SidebarLinks({ isExpanded }: { isExpanded: boolean }) {
     <>
       {links.map((link: linkType, index: number) => (
         <Button variant="link" key={index} className="flexs items-center justify-start">
-          
+        
         <Link href={link.href} className="flex gap-2" key={link.name}>
           {link.icon}
           <p className={cn("", isExpanded ? "" : "hidden")}>{link.name}</p>

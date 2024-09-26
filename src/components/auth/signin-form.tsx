@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  SignInUserSchema,
-  SignInUserType,
-} from "@/model/users.model";
+import { SignInUserSchema, SignInUserType } from "@/model/users.model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -17,12 +14,10 @@ import { useToast } from "@/hooks/use-toast";
 import { SignInApi } from "@/service/authService";
 import { useRouter } from "next/navigation";
 
-
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
-
 
   const form = useForm<z.infer<typeof SignInUserSchema>>({
     resolver: zodResolver(SignInUserSchema),
@@ -34,7 +29,7 @@ export default function SignUpForm() {
 
   const onSubmit: SubmitHandler<SignInUserType> = async (data) => {
     try {
-       await SignInApi(data);
+      await SignInApi(data);
 
       toast({
         variant: "default",
@@ -108,9 +103,9 @@ export default function SignUpForm() {
                         onClick={() => setShowPassword((prev) => !prev)}
                       >
                         {showPassword ? (
-                          <EyeOpenIcon className="absolute mr-10" />
+                          <EyeOpenIcon className="absolute mr-10 cursor-pointer" />
                         ) : (
-                          <EyeClosedIcon className="absolute mr-10" />
+                          <EyeClosedIcon className="absolute mr-10 cursor-pointer" />
                         )}
                       </span>
                     </div>

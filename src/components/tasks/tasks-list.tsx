@@ -17,7 +17,7 @@ export function TasksList() {
       });
       return await GetAllTaskService(data.user.id, data.token);
     },
-    
+    staleTime: Infinity
   });
 
   if (isLoading) {

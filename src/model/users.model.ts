@@ -26,8 +26,14 @@ export const UpdateUserSchema = z.object({
     password: z.string().min(6).optional(),
 })
 
+export const AuthSchema = z.object({
+    user: GetUserSchema,
+    token: z.string(),
+})
+
 export type UserModelType = z.infer<typeof UserModelSchema>;
 export type CreateUserType = z.infer<typeof CreateUserSchema>;
 export type SignInUserType = z.infer<typeof SignInUserSchema>;
 export type GetUserType = z.infer<typeof GetUserSchema>;
 export type UpdateUserType = z.infer<typeof UpdateUserSchema>;
+export type AuthType = z.infer<typeof AuthSchema>;

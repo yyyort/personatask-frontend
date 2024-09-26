@@ -7,7 +7,7 @@ import { CreateNoteSchema } from "@/model/notes.model";
 import { GetSpecificNoteService } from "@/service/notesService";
 import { useAuthStore } from "@/state/authState";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -17,7 +17,6 @@ export default function Note({
 }: {
   params: { noteId: string };
 }) {
-  const queryClient = useQueryClient();
   const auth = useAuthStore((state) => state.auth);
 
   const { data: note, isLoading } = useQuery({

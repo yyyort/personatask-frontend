@@ -37,8 +37,7 @@ export default function AuthWrapper({
   } else {
     return (
       <>
-        (
-        <div className="min-h-screen min-w-full flex">
+        <div className="min-h-screen min-w-full max-w-full flex overflow-hidden">
           <nav>
             <Sidebar />
           </nav>
@@ -47,7 +46,6 @@ export default function AuthWrapper({
             {children}
           </main>
         </div>
-        )
       </>
     );
   }

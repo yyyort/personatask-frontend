@@ -21,7 +21,6 @@ export const UpdateTaskSchema = z.object({
     timeTodo: z.string().nullable().optional(),
     deadline: z.string().nullable().optional(),
 });
-
 export type TaskModelType = z.infer<typeof TaskModelSchema>;
 export type CreateTaskType = z.infer<typeof CreateTaskSchema>;
 export type GetTaskType = z.infer<typeof GetTaskSchema>;
