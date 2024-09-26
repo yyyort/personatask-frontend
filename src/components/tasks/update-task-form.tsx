@@ -6,7 +6,7 @@ import {
 } from "@/model/tasks.model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { Input } from "../ui/input";
@@ -19,12 +19,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useTasksStore } from "@/state/tasksState";
 import { useToast } from "@/hooks/use-toast";
+import { UpdateTaskService } from "@/service/taskService";
+import { useAuthStore } from "@/state/authState";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function UpdateTaskForm({ task }: { task: GetTaskType }) {
+  const queryClient = useQueryClient();
   const { toast } = useToast();
-  const updateTask = useTasksStore((state) => state.updateTask);
+  const auth = useAuthStore((state) => state.auth);
 
   const form = useForm<z.infer<typeof UpdateTaskSchema>>({
     resolver: zodResolver(UpdateTaskSchema),
@@ -37,23 +40,36 @@ export default function UpdateTaskForm({ task }: { task: GetTaskType }) {
     },
   });
 
-  function onSubmit(data: UpdateTaskType) {
+  const onSubmit: SubmitHandler<UpdateTaskType> = async (formData) => {
     try {
-      updateTask(data, task.id);
-      form.reset();
+      await UpdateTaskService(
+        auth.user.id,
+        auth.token,
+        task.id,
+        formData
+      );
+
+      // show toast
       toast({
         title: "Task Updated",
         description: "Task has been updated successfully",
       });
-    } catch (error: any) {
+
+      //invalidate query
+      queryClient.invalidateQueries({
+        queryKey: ["tasks"],
+      });
+
+    } catch (error: unknown) {
+      console.error(error);
       toast({
         variant: "destructive",
         title: "Task Update Failed",
-        description: error.message,
+        description: (error as Error).message,
       });
-      console.error(error);
     }
-  }
+  };
+
   return (
     <Form {...form}>
       <form
@@ -85,7 +101,7 @@ export default function UpdateTaskForm({ task }: { task: GetTaskType }) {
                 <FormLabel>status</FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  defaultValue={field.value ?? task.status}
                 >
                   <FormControl>
                     <SelectTrigger>

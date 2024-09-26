@@ -4,9 +4,8 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CreateNoteSchema } from "@/model/notes.model";
-import { GetUserType } from "@/model/users.model";
-import { RefreshTokenApi } from "@/service/authService";
 import { GetSpecificNoteService } from "@/service/notesService";
+import { useAuthStore } from "@/state/authState";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React from "react";
@@ -19,22 +18,11 @@ export default function Note({
   params: { noteId: string };
 }) {
   const queryClient = useQueryClient();
+  const auth = useAuthStore((state) => state.auth);
 
   const { data: note, isLoading } = useQuery({
     queryFn: async () => {
-      const data:
-        | {
-            token: string;
-            user: GetUserType;
-          }
-        | undefined = await queryClient.ensureQueryData({
-        queryKey: ["refreshToken"],
-        queryFn: () => RefreshTokenApi(),
-      });
-
-      console.log(data);
-
-      return GetSpecificNoteService(noteId, data!.user, data!.token);
+      return GetSpecificNoteService(noteId, auth!.user, auth!.token);
     },
     queryKey: ["note", noteId],
     enabled: !!noteId, // only fetch when noteId is available
@@ -87,11 +75,8 @@ export default function Note({
                 <FormControl>
                   <Textarea
                     {...field}
-                    defaultValue={
-                      note?.content
-                    }
+                    defaultValue={note?.content}
                     value={field.value}
-
                     className="h-[80vh] outline-none focus-visible:ring-0"
                   />
                 </FormControl>

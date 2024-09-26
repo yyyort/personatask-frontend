@@ -2,23 +2,28 @@
 import PathBreadcrumbs from "@/components/path-breadcrumbs";
 import Sidebar from "@/components/sidebar/sidebar";
 import { RefreshTokenApi } from "@/service/authService";
+import { useAuthStore } from "@/state/authState";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useEffect } from "react";
 
 export default function AuthWrapper({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const router = useRouter();
+  const setAuth = useAuthStore((state) => state.setAuth);
 
-  const {
-    isLoading,
-    isError,
-  } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryFn: () => RefreshTokenApi(),
     queryKey: ["refreshToken"],
     staleTime: Infinity,
     retry: 3,
+  });
+
+  useEffect(() => {
+    if (data) {
+      setAuth(data);
+    }
   });
 
   if (isLoading) {

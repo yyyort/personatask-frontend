@@ -7,22 +7,16 @@ import { EllipsisVertical, Plus } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { GetUserType } from "@/model/users.model";
+import { useAuthStore } from "@/state/authState";
 
 export default function Notes() {
   const queryClient = useQueryClient();
-
-  const data:
-    | {
-        token: string;
-        user: GetUserType;
-      }
-    | undefined = queryClient.getQueryData(["refreshToken"]);
+  const auth = useAuthStore((state) => state.auth);
 
   const { data: notes } = useQuery({
-    queryFn: () => GetNoteService(data!.user, data!.token),
+    queryFn: () => GetNoteService(auth.user, auth.token),
     queryKey: ["notes"],
-    enabled: !!data,
+    enabled: !!auth,
     staleTime: Infinity,
   });
 

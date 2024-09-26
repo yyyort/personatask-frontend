@@ -10,8 +10,8 @@ import {
   CreateNoteType,
   NoteModelType,
 } from "@/model/notes.model";
-import { GetUserType } from "@/model/users.model";
 import { CreateNoteService } from "@/service/notesService";
+import { useAuthStore } from "@/state/authState";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -23,13 +23,7 @@ export default function AddNote() {
   const { toast } = useToast();
   const router = useRouter();
   const queryClient = useQueryClient();
-
-  const data:
-    | {
-        token: string;
-        user: GetUserType;
-      }
-    | undefined = queryClient.getQueryData(["refreshToken"]);
+  const auth = useAuthStore((state) => state.auth);
 
   const form = useForm<z.infer<typeof CreateNoteSchema>>({
     resolver: zodResolver(CreateNoteSchema),
@@ -41,7 +35,7 @@ export default function AddNote() {
 
   const onSubmit: SubmitHandler<CreateNoteType> = async (formData) => {
     try {
-      const res = await CreateNoteService(formData, data!.user, data!.token);
+      const res = await CreateNoteService(formData, auth!.user, auth!.token);
 
       //if response is not ok
       if (!res.ok) {

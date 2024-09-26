@@ -2,7 +2,7 @@
 import { CreateTaskSchema, CreateTaskType } from "@/model/tasks.model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { Input } from "../ui/input";
@@ -15,12 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useTasksStore } from "@/state/tasksState";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { CreateTaskService } from "@/service/taskService";
+import { useAuthStore } from "@/state/authState";
 
 export default function AddTaskForm() {
   const { toast } = useToast();
-  const addTask = useTasksStore((state) => state.addTask);
+  const queryClient = useQueryClient();
+  const auth = useAuthStore((state) => state.auth);
 
   const form = useForm<z.infer<typeof CreateTaskSchema>>({
     resolver: zodResolver(CreateTaskSchema),
@@ -31,23 +34,33 @@ export default function AddTaskForm() {
     },
   });
 
-  function onSubmit(data: CreateTaskType) {
+  const onSubmit: SubmitHandler<CreateTaskType> = (formData) => {
     try {
-      addTask(data);
-      form.reset();
+      //create task
+      CreateTaskService(formData, auth.user.id, auth.token);
+
       toast({
         title: "Task Added",
         description: "Task has been added successfully",
       });
+
+      //reset form
+      form.reset();
+
+      //refetch tasks
+      queryClient.invalidateQueries({
+        queryKey: ["tasks"],
+      });
     } catch (error: unknown) {
+      console.error(error);
       toast({
         variant: "destructive",
         title: "Task Add Failed",
         description: (error as Error).message,
       });
-      console.error(error);
     }
-  }
+  };
+
   return (
     <Form {...form}>
       <form
