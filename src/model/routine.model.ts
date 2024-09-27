@@ -1,4 +1,4 @@
-import { CreateTaskSchema, GetTaskSchema, TaskModelSchema } from "@/model/tasks.model";
+import { CreateTaskSchema, GetTaskSchema } from "@/model/tasks.model";
 import { z } from "zod";
 
 

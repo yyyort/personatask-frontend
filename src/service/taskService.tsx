@@ -10,7 +10,7 @@ export const CreateTaskService = async (
   token: string
 ) => {
   try {
-    const res = await fetch(`/api/tasks/${userId}`, {
+    const res = await fetch(`/api/tasks`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -36,7 +36,7 @@ export const CreateTaskService = async (
 
 export const GetAllTaskService = async (userId: string, token: string) => {
   try {
-    const res = await fetch(`/api/tasks/${userId}`, {
+    const res = await fetch(`/api/tasks`, {
       method: "GET",
       credentials: "include",
       headers: {
@@ -65,7 +65,7 @@ export const GetTaskService = async (
   token: string
 ) => {
   try {
-    const res = await fetch(`/api/tasks/${userId}/${taskId}`, {
+    const res = await fetch(`/api/tasks/${taskId}`, {
       method: "GET",
       credentials: "include",
       headers: {
@@ -95,7 +95,7 @@ export const UpdateTaskStatusService = async (
   status: "done" | "due" | "overdue"
 ) => {
   try {
-    await fetch(`/api/tasks/${userId}/${id}`, {
+    await fetch(`/api/tasks/${id}`, {
       method: "PATCH",
       credentials: "include",
       headers: {
@@ -117,7 +117,7 @@ export const UpdateTaskService = async (
   data: UpdateTaskType
 ) => {
   try {
-    await fetch(`/api/tasks/${userId}/${id}`, {
+    await fetch(`/api/tasks/${id}`, {
       method: "PUT",
       credentials: "include",
       headers: {

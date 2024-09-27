@@ -19,8 +19,8 @@ export const SignInApi = async (formData: SignInUserType) => {
         }
 
         const parsedData: {
-            token: string;
             user: GetUserType;
+            token: string;
         } = await res.json();
 
         return parsedData;

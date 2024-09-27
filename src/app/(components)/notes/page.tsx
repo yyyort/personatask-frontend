@@ -2,21 +2,25 @@
 import { Button } from "@/components/ui/button";
 import { NoteModelType } from "@/model/notes.model";
 import { GetNoteService } from "@/service/notesService";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { EllipsisVertical, Plus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { EllipsisVertical, Pin, PinIcon, Plus, Sparkle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/state/authState";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function Notes() {
-  const queryClient = useQueryClient();
   const auth = useAuthStore((state) => state.auth);
 
-  const { data: notes } = useQuery({
+  const { data } = useQuery({
     queryFn: () => GetNoteService(auth.user, auth.token),
     queryKey: ["notes"],
-    enabled: !!auth,
+    enabled: !!auth.token, // only fetch when auth is available
     staleTime: Infinity,
   });
 
@@ -32,7 +36,7 @@ export default function Notes() {
         </Link>
       </div>
       <div className="columns-4 gap-4">
-        {notes?.map((note: NoteModelType) => (
+        {data?.map((note: NoteModelType) => (
           <NoteContainer key={note.id} note={note} />
         ))}
       </div>
@@ -54,10 +58,32 @@ export function NoteContainer({ note }: { note: NoteModelType }) {
       >
         <div className="flex items-center justify-between">
           <p className="text-lg font-semibold">{note.title}</p>
-          <Button variant={"ghost"} className="m-0 p-0 hover:bg-slate-200">
-            <EllipsisVertical size={24} />
-          </Button>
+
+          <div className="flex items-center gap-2">
+            {
+              // if note is pinned, show pin icon
+              String(note.pinned) === "true" && (
+                <Pin size={24} className="text-blue-500 cursor-pointer" />
+              )
+            }
+
+            {
+              // if note is favorite, show sparkle icon
+              String(note.favorite) === "true" && (
+                <Sparkle size={24} className="text-yellow-500" />
+              )
+            }
+
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <PopoverMenuNote note={note} />
+            </div>
+          </div>
         </div>
+
         <p className="">
           {
             // truncate the content
@@ -67,6 +93,42 @@ export function NoteContainer({ note }: { note: NoteModelType }) {
           }
         </p>
       </div>
+    </>
+  );
+}
+
+function PopoverMenuNote({ note }: { note: NoteModelType }) {
+  const onFavorite = () => {};
+  const onPin = () => {};
+  const onDelete = () => {};
+
+  return (
+    <>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant={"ghost"} className="m-0 p-0 hover:bg-slate-200">
+            <EllipsisVertical size={24} />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="flex flex-col gap-2 w-fit">
+          <Button variant={"outline"} className="flex gap-2 items-center justify-start hover:shadow-md" onClick={onFavorite}>
+            <Sparkle/>
+            {
+              String(note.favorite) === "true" ? "Unfavorite" : "Favorite"
+            }
+          </Button>
+          <Button variant={"outline"} className="flex gap-2 justify-start hover:shadow-md" onClick={onPin}>
+            <PinIcon/>
+            {
+              String(note.pinned) === "true" ? "Unpin" : "Pin"
+            }
+          </Button>
+          <Button variant={"outline"} className="flex gap-2 justify-start hover:shadow-md" onClick={onDelete}>
+            <Trash2/>
+            Delete
+          </Button>
+        </PopoverContent>
+      </Popover>
     </>
   );
 }

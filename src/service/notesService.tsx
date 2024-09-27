@@ -1,4 +1,4 @@
-import { CreateNoteType, NoteModelType } from "@/model/notes.model";
+import { CreateNoteType, NoteModelType, UpdateNoteType } from "@/model/notes.model";
 import { GetUserType } from "@/model/users.model";
 
 export const GetNoteService = async (user: GetUserType, token: string) => {
@@ -7,11 +7,11 @@ export const GetNoteService = async (user: GetUserType, token: string) => {
   }
 
   try {
-    const response = await fetch(`/api/notes/${user.id}`, {
+    const response = await fetch(`/api/notes`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        "authorization": `Bearer ${token}`,
       },
     });
 
@@ -20,9 +20,9 @@ export const GetNoteService = async (user: GetUserType, token: string) => {
       throw new Error(errorMessage.message);
     }
 
-    const parsedData: NoteModelType[] = await response.json();
+    const jsonData: NoteModelType[] = await response.json();
 
-    return parsedData;
+    return jsonData;
   } catch (error) {
     console.error(error);
     throw error;
@@ -39,7 +39,7 @@ export const GetSpecificNoteService = async (
   }
 
   try {
-    const response = await fetch(`/api/notes/${user.id}/${id}`, {
+    const response = await fetch(`/api/notes/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -71,7 +71,7 @@ export const CreateNoteService = async (
   }
 
   try {
-    const response = await fetch(`/api/notes/${user.id}`, {
+    const response = await fetch(`/api/notes`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -81,6 +81,38 @@ export const CreateNoteService = async (
     });
 
     return response;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const UpdateNoteService = async (
+  id: string,
+  token: string,
+  data: UpdateNoteType,
+) => {
+
+  if (token === "") {
+    throw new Error("Token not found");
+  }
+
+  try {
+    const response = await fetch(`/api/notes/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    //check if status is 200 or ok
+    if (!response.ok) {
+      const errorMessage = await response.json();
+      throw new Error(errorMessage.message);
+    }
+
   } catch (error) {
     console.error(error);
     throw error;

@@ -57,7 +57,12 @@ export default function AddNote() {
 
       console.log(parsedData);
 
-      //wait for 1 second before redirecting
+      //revalidate the query
+      queryClient.invalidateQueries(
+        {
+          queryKey: ["notes"],
+        }
+      );
 
       router.replace(`/notes/${parsedData.id}`);
     } catch (error: unknown) {

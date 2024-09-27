@@ -3,7 +3,7 @@ import { CreateRoutineType, GetRoutineType } from "../model/routine.model";
 
 export const GetAllRoutineService = async (auth: AuthType) => {
     try {
-        const res = await fetch(`/api/routines/${auth.user.id}`, {
+        const res = await fetch(`/api/routines`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -26,7 +26,7 @@ export const GetAllRoutineService = async (auth: AuthType) => {
 
 export const CreateRoutineService = async (auth: AuthType, routine: CreateRoutineType) => {
     try {
-        const res = await fetch(`/api/routines/${auth.user.id}`, {
+        const res = await fetch(`/api/routines`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

@@ -7,7 +7,7 @@ type RoutinesState = {
 };
 
 export const useRoutinesStore = create<RoutinesState>((set) => ({
-  addRoutine: true,
+  addRoutine: false,
   setAddRoutine: (addRoutine: boolean) => {
     set(() => ({
         addRoutine: addRoutine,

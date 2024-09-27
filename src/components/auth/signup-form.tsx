@@ -108,9 +108,9 @@ export default function SignUpForm() {
                         onClick={() => setShowPassword((prev) => !prev)}
                       >
                         {showPassword ? (
-                          <EyeOpenIcon className="absolute mr-10" />
+                          <EyeOpenIcon className="absolute mr-10 cursor-pointer" />
                         ) : (
-                          <EyeClosedIcon className="absolute mr-10" />
+                          <EyeClosedIcon className="absolute mr-10 cursor-pointer" />
                         )}
                       </span>
                     </div>
@@ -147,9 +147,9 @@ export default function SignUpForm() {
                         onClick={() => setShowConfirmPassword((prev) => !prev)}
                       >
                         {showConfirmPassword ? (
-                          <EyeOpenIcon className="absolute mr-10" />
+                          <EyeOpenIcon className="absolute mr-10 cursor-pointer" />
                         ) : (
-                          <EyeClosedIcon className="absolute mr-10" />
+                          <EyeClosedIcon className="absolute mr-10 cursor-pointer" />
                         )}
                       </span>
                     </div>
