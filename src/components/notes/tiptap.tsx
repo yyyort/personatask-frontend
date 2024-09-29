@@ -22,7 +22,7 @@ export const Tiptap = forwardRef(
       editorProps: {
         attributes: {
           class:
-            "prose min-w-full h-[45rem] text-foreground p-4 rounded-lg shadow-md leading-3 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            "prose min-w-full h-[42rem] max-h-[42rem] overflow-auto text-foreground p-4 rounded-lg shadow-md leading-3 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
         },
       },
       onUpdate({ editor }) {
@@ -36,7 +36,7 @@ export const Tiptap = forwardRef(
 
     return (
       <>
-        <div className="prose min-w-full h-[20rem]">
+        <div className="">
           <Toolbar editor={editor} />
           <EditorContent editor={editor} ref={ref} />
         </div>

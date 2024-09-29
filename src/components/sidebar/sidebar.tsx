@@ -5,9 +5,11 @@ import { ModeToggle } from "../ui/mode-toggle";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import Logout from "./logout";
+import { useAuthStore } from "@/state/authState";
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(true);
+  const auth = useAuthStore((state) => state.auth);
 
   return (
     <div
@@ -18,17 +20,21 @@ export default function Sidebar() {
     >
       <div className="flex-flex-col py-5">
         {/* user info */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 place-items-center">
           <div className="flex">
             <User />
             <p className={cn("", expanded ? "" : "hidden")}>name</p>
           </div>
 
-          <div className="relative flex items-center">
+          <div className="relative flex items-center pt-5">
             <ModeToggle />
 
             {/* expanded */}
-            <div className="absolute top-0 -right-10 ease-in-out duration-500">
+            <div className={
+              cn("absolute top-5 -right-10 ease-in-out duration-500",
+                expanded ? "-right-16" : "-right-10"
+              )
+            }>
               <button
                 className="bg-slate-200 text-black p-2 rounded-md"
                 onClick={() => setExpanded(!expanded)}

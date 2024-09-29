@@ -41,7 +41,7 @@ export default function AuthWrapper({
           <nav>
             <Sidebar />
           </nav>
-          <main className="w-full max-h-screen p-10 overflow-auto">
+          <main className="w-full max-h-screen px-10 py-5 overflow-auto">
             <PathBreadcrumbs />
             {children}
           </main>

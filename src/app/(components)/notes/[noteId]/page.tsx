@@ -1,19 +1,31 @@
 "use client";
 
 import { Tiptap } from "@/components/notes/tiptap";
-import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { UpdateNoteSchema, UpdateNoteType } from "@/model/notes.model";
 import {
-  GetSpecificNoteService,
-  UpdateNoteService,
-} from "@/service/notesService";
-import { useAuthStore } from "@/state/authState";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import useNote from "@/hooks/use-note";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { UpdateNoteSchema, UpdateNoteType } from "@/model/notes.model";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import DOMPurify from "dompurify";
+import { Pin, Sparkle } from "lucide-react";
 import React, { useEffect } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -21,21 +33,17 @@ import { z } from "zod";
 export default function Note({
   params: { noteId },
 }: {
-  params: { noteId: string };
+  params: { noteId: number };
 }) {
-  const queryClient = useQueryClient();
-  const auth = useAuthStore((state) => state.auth);
-  const { toast } = useToast();
+  const {
+    onFavorite,
+    onPin,
+    onDelete,
+    queryNote,
+    updateNote
+  } = useNote();
 
-  const { data, isLoading } = useQuery({
-    queryFn: async () => {
-      return GetSpecificNoteService(noteId, auth!.user, auth!.token);
-    },
-    queryKey: ["note", noteId],
-    enabled: !!noteId, // only fetch when noteId is available
-    staleTime: Infinity,
-    retry: 3,
-  });
+  const { data, isLoading } = queryNote(Number(noteId));
 
   const form = useForm<z.infer<typeof UpdateNoteSchema>>({
     resolver: zodResolver(UpdateNoteSchema),
@@ -59,63 +67,62 @@ export default function Note({
     return <div>loading...</div>;
   }
 
-  const onSubmit: SubmitHandler<UpdateNoteType> = async (formData) => {
-    try {
-      //sanitize content
-      const cleanContent = DOMPurify.sanitize(formData.content);
-
-      await UpdateNoteService(noteId, auth.token, {
-        ...formData,
-        content: cleanContent,
-      });
-
-      toast({
-        title: "Note Updated",
-        description: "Note has been updated",
-      });
-
-      //invalidate cache
-      queryClient.invalidateQueries({
-        queryKey: ["note", noteId],
-      });
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: "Note Update Failed",
-        description: "Failed to update note",
-        variant: "destructive",
-      });
-    }
+  const onSubmit: SubmitHandler<UpdateNoteType> = (formData) => {
+    updateNote(Number(noteId), formData);
   };
 
   return (
     <div className="">
       <Form {...form}>
         <form
-          className="flex flex-col gap-5 mt-10"
+          className="flex flex-col gap-5 pt-4"
           onSubmit={form.handleSubmit(onSubmit)}
         >
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-end">
             {/* title */}
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel className="text-slate-500">Title</FormLabel>
                   <FormControl>
                     <Input
                       type="text"
                       {...field}
-                      className="w-[40rem] outline-none text-2xl border-slate-100"
+                      className="w-[40rem] outline-none text-2xl border-slate-100 h-fit p-3"
                     />
                   </FormControl>
                 </FormItem>
               )}
             />
 
-            {/* submit */}
-            <Button variant={"outline"} type="submit">
-              <p>save</p>
+            {/* favorite */}
+            <Button
+              variant={"ghost"}
+              className={cn(
+                "text-lg",
+                data?.favorite
+                  ? "text-yellow-500 hover:text-yellow-600"
+                  : "hover:text-yellow-500"
+              )}
+              onClick={() => onFavorite(noteId, data?.favorite ?? false)}
+            >
+              <Sparkle />
+            </Button>
+
+            {/* pin */}
+            <Button
+              variant={"ghost"}
+              className={cn(
+                "text-lg",
+                data?.pinned
+                  ? "text-blue-500 hover:text-blue-600"
+                  : "hover:text-blue-500"
+              )}
+              onClick={() => onPin(noteId, data?.pinned ?? false)}
+            >
+              <Pin />
             </Button>
           </div>
 
@@ -125,6 +132,7 @@ export default function Note({
             name="content"
             render={({ field }) => (
               <FormItem>
+                <FormLabel className="text-slate-500">Content</FormLabel>
                 <FormControl>
                   <Tiptap
                     {...field}
@@ -135,6 +143,44 @@ export default function Note({
               </FormItem>
             )}
           />
+
+          {/* util button, delete, save, ... */}
+          <div className="flex gap-3 ml-auto">
+            {/* submit */}
+            <Button variant={"outline"} type="submit" className="text-lg">
+              {form.formState.isDirty ? "unsaved" : "save"}
+            </Button>
+
+            {/* delete */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant={"default"}
+                  type="button"
+                  className="text-lg"
+                >
+                  delete
+                </Button>
+              </AlertDialogTrigger>
+
+              <AlertDialogContent>
+                <AlertDialogTitle>
+                  Are you sure you want to delete this note?
+                </AlertDialogTitle>
+                
+                <AlertDialogDescription>
+                  Permanently delete this note. This action cannot be undone.
+                </AlertDialogDescription>
+
+                <AlertDialogFooter>
+                  <AlertDialogCancel>cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={()=>onDelete(noteId)}
+                  >yes</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </form>
       </Form>
     </div>

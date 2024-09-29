@@ -1,11 +1,7 @@
 import { CreateNoteType, NoteModelType, UpdateNoteType } from "@/model/notes.model";
 import { GetUserType } from "@/model/users.model";
 
-export const GetNoteService = async (user: GetUserType, token: string) => {
-  if (!user) {
-    throw new Error("User not found");
-  }
-
+export const GetNoteService = async (token: string) => {
   try {
     const response = await fetch(`/api/notes`, {
       method: "GET",
@@ -30,12 +26,11 @@ export const GetNoteService = async (user: GetUserType, token: string) => {
 };
 
 export const GetSpecificNoteService = async (
-  id: string,
-  user: GetUserType,
+  id: number,
   token: string
 ) => {
-  if (!user) {
-    throw new Error("User not found");
+  if (token === "") {
+    throw new Error("Token not found");
   }
 
   try {
@@ -88,7 +83,7 @@ export const CreateNoteService = async (
 };
 
 export const UpdateNoteService = async (
-  id: string,
+  id: number,
   token: string,
   data: UpdateNoteType,
 ) => {
@@ -118,3 +113,91 @@ export const UpdateNoteService = async (
     throw error;
   }
 };
+
+export const UpdateFavoriteService = async (
+  id: number,
+  token: string,
+  favorite: boolean
+) => {
+  if (token === "") {
+    throw new Error("Token not found");
+  }
+
+  try {
+    const response = await fetch(`/api/notes/${id}/favorite`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ favorite }),
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.json();
+      throw new Error(errorMessage.message);
+    }
+
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+export const UpdatePinService = async (
+  id: number,
+  token: string,
+  pinned: boolean
+) => {
+  if (token === "") {
+    throw new Error("Token not found");
+  }
+
+  try {
+    const response = await fetch(`/api/notes/${id}/pinned`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ pinned }),
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.json();
+      throw new Error(errorMessage.message);
+    }
+
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+export const DeleteNoteService = async (
+  id: number,
+  token: string
+) => {
+  if (token === "") {
+    throw new Error("Token not found");
+  }
+
+  try {
+    const response = await fetch(`/api/notes/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.json();
+      throw new Error(errorMessage.message);
+    }
+
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}

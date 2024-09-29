@@ -2,7 +2,13 @@
 
 import { Tiptap } from "@/components/notes/tiptap";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -43,8 +49,10 @@ export default function AddNote() {
         {
           title: formData.title,
           content: cleanContent,
-        }
-        , auth!.user, auth!.token);
+        },
+        auth!.user,
+        auth!.token
+      );
 
       //if response is not ok
       if (!res.ok) {
@@ -67,11 +75,9 @@ export default function AddNote() {
       console.log(parsedData);
 
       //revalidate the query
-      queryClient.invalidateQueries(
-        {
-          queryKey: ["notes"],
-        }
-      );
+      queryClient.invalidateQueries({
+        queryKey: ["notes"],
+      });
 
       router.replace(`/notes/${parsedData.id}`);
     } catch (error: unknown) {
@@ -98,10 +104,11 @@ export default function AddNote() {
             name="title"
             render={({ field }) => (
               <FormItem>
+                <FormLabel className="text-slate-500">Title</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    className="w-[40rem] outline-none text-2xl border-slate-100"
+                    className="w-[40rem] outline-none text-2xl border-slate-100 h-fit p-3"
                   />
                 </FormControl>
               </FormItem>
@@ -120,10 +127,11 @@ export default function AddNote() {
           name="content"
           render={({ field }) => (
             <FormItem>
+              <FormLabel className="text-slate-500">Content</FormLabel>
               <FormControl>
-                <Tiptap 
-                  {...field} 
-                  content={field.value} 
+                <Tiptap
+                  {...field}
+                  content={field.value}
                   onChange={field.onChange}
                 />
               </FormControl>
