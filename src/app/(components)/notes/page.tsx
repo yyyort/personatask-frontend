@@ -3,7 +3,14 @@ import { Button } from "@/components/ui/button";
 import { NoteModelType } from "@/model/notes.model";
 import { GetNoteService } from "@/service/notesService";
 import { useQuery } from "@tanstack/react-query";
-import { EllipsisVertical, Pin, PinIcon, Plus, Sparkle, Trash2 } from "lucide-react";
+import {
+  EllipsisVertical,
+  Pin,
+  PinIcon,
+  Plus,
+  Sparkle,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/navigation";
@@ -13,6 +20,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import DOMPurify from "dompurify";
 
 export default function Notes() {
   const auth = useAuthStore((state) => state.auth);
@@ -58,7 +66,6 @@ export function NoteContainer({ note }: { note: NoteModelType }) {
       >
         <div className="flex items-center justify-between">
           <p className="text-lg font-semibold">{note.title}</p>
-
           <div className="flex items-center gap-2">
             {
               // if note is pinned, show pin icon
@@ -84,14 +91,21 @@ export function NoteContainer({ note }: { note: NoteModelType }) {
           </div>
         </div>
 
-        <p className="">
+        {/* <p className="">
           {
             // truncate the content
             note.content!.length > 700
               ? note.content!.slice(0, 500) + " ..."
               : note.content
           }
-        </p>
+        </p> */}
+        <div
+          dangerouslySetInnerHTML={
+            // render the content as html
+            { __html: DOMPurify.sanitize(note.content!) }
+          }
+          className="h-100 overflow-hidden"
+        />
       </div>
     </>
   );
@@ -111,20 +125,28 @@ function PopoverMenuNote({ note }: { note: NoteModelType }) {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="flex flex-col gap-2 w-fit">
-          <Button variant={"outline"} className="flex gap-2 items-center justify-start hover:shadow-md" onClick={onFavorite}>
-            <Sparkle/>
-            {
-              String(note.favorite) === "true" ? "Unfavorite" : "Favorite"
-            }
+          <Button
+            variant={"outline"}
+            className="flex gap-2 items-center justify-start hover:shadow-md"
+            onClick={onFavorite}
+          >
+            <Sparkle />
+            {String(note.favorite) === "true" ? "Unfavorite" : "Favorite"}
           </Button>
-          <Button variant={"outline"} className="flex gap-2 justify-start hover:shadow-md" onClick={onPin}>
-            <PinIcon/>
-            {
-              String(note.pinned) === "true" ? "Unpin" : "Pin"
-            }
+          <Button
+            variant={"outline"}
+            className="flex gap-2 justify-start hover:shadow-md"
+            onClick={onPin}
+          >
+            <PinIcon />
+            {String(note.pinned) === "true" ? "Unpin" : "Pin"}
           </Button>
-          <Button variant={"outline"} className="flex gap-2 justify-start hover:shadow-md" onClick={onDelete}>
-            <Trash2/>
+          <Button
+            variant={"outline"}
+            className="flex gap-2 justify-start hover:shadow-md"
+            onClick={onDelete}
+          >
+            <Trash2 />
             Delete
           </Button>
         </PopoverContent>

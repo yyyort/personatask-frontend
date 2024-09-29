@@ -1,9 +1,9 @@
 "use client";
 
+import { Tiptap } from "@/components/notes/tiptap";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import {
   CreateNoteSchema,
@@ -14,6 +14,7 @@ import { CreateNoteService } from "@/service/notesService";
 import { useAuthStore } from "@/state/authState";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import DOMPurify from "dompurify";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -35,7 +36,15 @@ export default function AddNote() {
 
   const onSubmit: SubmitHandler<CreateNoteType> = async (formData) => {
     try {
-      const res = await CreateNoteService(formData, auth!.user, auth!.token);
+      //sanitize content
+      const cleanContent = DOMPurify.sanitize(formData.content);
+
+      const res = await CreateNoteService(
+        {
+          title: formData.title,
+          content: cleanContent,
+        }
+        , auth!.user, auth!.token);
 
       //if response is not ok
       if (!res.ok) {
@@ -92,7 +101,7 @@ export default function AddNote() {
                 <FormControl>
                   <Input
                     {...field}
-                    className="w-[40rem] outline-none focus-visible:ring-0"
+                    className="w-[40rem] outline-none text-2xl border-slate-100"
                   />
                 </FormControl>
               </FormItem>
@@ -112,10 +121,10 @@ export default function AddNote() {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <Textarea
-                  {...field}
-                  value={field.value ?? ""}
-                  className="h-[80vh] outline-none focus-visible:ring-0"
+                <Tiptap 
+                  {...field} 
+                  content={field.value} 
+                  onChange={field.onChange}
                 />
               </FormControl>
             </FormItem>

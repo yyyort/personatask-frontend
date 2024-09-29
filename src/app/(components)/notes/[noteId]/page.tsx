@@ -1,8 +1,9 @@
 "use client";
+
+import { Tiptap } from "@/components/notes/tiptap";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { UpdateNoteSchema, UpdateNoteType } from "@/model/notes.model";
 import {
@@ -11,7 +12,8 @@ import {
 } from "@/service/notesService";
 import { useAuthStore } from "@/state/authState";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import DOMPurify from "dompurify";
 import React, { useEffect } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -21,6 +23,7 @@ export default function Note({
 }: {
   params: { noteId: string };
 }) {
+  const queryClient = useQueryClient();
   const auth = useAuthStore((state) => state.auth);
   const { toast } = useToast();
 
@@ -58,9 +61,23 @@ export default function Note({
 
   const onSubmit: SubmitHandler<UpdateNoteType> = async (formData) => {
     try {
-      console.log("formData", formData);
+      //sanitize content
+      const cleanContent = DOMPurify.sanitize(formData.content);
 
-      await UpdateNoteService(noteId, auth.token, formData);
+      await UpdateNoteService(noteId, auth.token, {
+        ...formData,
+        content: cleanContent,
+      });
+
+      toast({
+        title: "Note Updated",
+        description: "Note has been updated",
+      });
+
+      //invalidate cache
+      queryClient.invalidateQueries({
+        queryKey: ["note", noteId],
+      });
     } catch (error) {
       console.error(error);
       toast({
@@ -75,10 +92,10 @@ export default function Note({
     <div className="">
       <Form {...form}>
         <form
-          className="flex flex-col gap-5 my-10"
+          className="flex flex-col gap-5 mt-10"
           onSubmit={form.handleSubmit(onSubmit)}
         >
-          <div className="flex justify-between">
+          <div className="flex gap-4">
             {/* title */}
             <FormField
               control={form.control}
@@ -89,7 +106,7 @@ export default function Note({
                     <Input
                       type="text"
                       {...field}
-                      className="w-[40rem] outline-none focus-visible:ring-0"
+                      className="w-[40rem] outline-none text-2xl border-slate-100"
                     />
                   </FormControl>
                 </FormItem>
@@ -109,9 +126,10 @@ export default function Note({
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Textarea
+                  <Tiptap
                     {...field}
-                    className="h-[80vh] outline-none focus-visible:ring-0"
+                    content={data?.content ?? field.value}
+                    onChange={field.onChange}
                   />
                 </FormControl>
               </FormItem>
