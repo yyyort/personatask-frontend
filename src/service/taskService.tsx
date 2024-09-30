@@ -88,13 +88,12 @@ export const GetTaskService = async (
 };
 
 export const UpdateTaskStatusService = async (
-  userId: string,
   token: string,
   id: number,
   status: "done" | "due" | "overdue"
 ) => {
   try {
-    await fetch(`/api/tasks/${id}`, {
+    const res = await fetch(`/api/tasks/${id}`, {
       method: "PATCH",
       credentials: "include",
       headers: {
@@ -103,6 +102,11 @@ export const UpdateTaskStatusService = async (
       },
       body: JSON.stringify({ status: status }),
     });
+
+    if (!res.ok) {
+      const errorMessage = await res.json();
+      throw new Error(errorMessage.message);
+    }
   } catch (error: unknown) {
     console.error(error);
     throw error;
@@ -110,13 +114,12 @@ export const UpdateTaskStatusService = async (
 };
 
 export const UpdateTaskService = async (
-  userId: string,
   token: string,
   id: number,
   data: UpdateTaskType
 ) => {
   try {
-    await fetch(`/api/tasks/${id}`, {
+    const res = await fetch(`/api/tasks/${id}`, {
       method: "PUT",
       credentials: "include",
       headers: {
@@ -125,6 +128,35 @@ export const UpdateTaskService = async (
       },
       body: JSON.stringify(data),
     });
+
+    if (!res.ok) {
+      const errorMessage = await res.json();
+      throw new Error(errorMessage.message);
+    }
+  } catch (error: unknown) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const DeleteTaskService = async (
+  token: string,
+  id: number,
+) => {
+  try {
+    const res= await fetch(`/api/tasks/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const errorMessage = await res.json();
+      throw new Error(errorMessage.message);
+    }
   } catch (error: unknown) {
     console.error(error);
     throw error;

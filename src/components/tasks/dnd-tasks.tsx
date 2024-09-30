@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
+import React, { act } from "react";
 import {
-  closestCenter,
+  closestCorners,
   DndContext,
   DragCancelEvent,
   DragEndEvent,
@@ -9,17 +9,15 @@ import {
   DragOverlay,
   DragStartEvent,
   UniqueIdentifier,
+  useDraggable,
   useDroppable,
 } from "@dnd-kit/core";
-import { arrayMove, SortableContext, useSortable } from "@dnd-kit/sortable";
-import { useTasksStore } from "@/state/tasksState";
+import { columnType, useTasksStore } from "@/state/tasksState";
 import { GetTaskType } from "@/model/tasks.model";
 import { TaskContainer } from "./task-container";
-import { GripVertical, Trash2 } from "lucide-react";
-import { CSS } from "@dnd-kit/utilities";
+import { GripVertical, Plus, Trash2 } from "lucide-react";
 import UseTask from "@/hooks/use-task";
 import { cn } from "@/lib/utils";
-import { createPortal } from "react-dom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,187 +29,165 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 
-export type columnType = {
-  id: string;
-  title: string;
-  tasks: GetTaskType[];
-};
-
 export default function DndTask() {
-  UseTask();
-  const tasks = useTasksStore((state) => state.tasks);
-  const setTasks = useTasksStore((state) => state.setTasks);
+  const { UpdateTasksFromServer, RemoveTaskFromServer } = UseTask();
+  const columns: columnType[] = useTasksStore((state) => state.columns);
   const changeTaskStatus = useTasksStore((state) => state.changeTaskStatus);
-  const [acitveId, setActiveId] = React.useState<UniqueIdentifier | null>(null);
-  const [overId, setOverId] = React.useState<UniqueIdentifier | null>(null);
-  const [trashTaskId, setTrashTaskId] = React.useState<UniqueIdentifier | null>(
+  const [activeTask, setActiveTask] = React.useState<GetTaskType | null>(null);
+  const [activeColumn, setActiveColumn] = React.useState<columnType | null>(
     null
   );
+  const [overId, setOverId] = React.useState<UniqueIdentifier | null>(null);
 
-  const columns: columnType[] = [
-    {
-      id: "due",
-      title: "Due",
-      tasks: tasks.filter((task) => task.status === "due"),
-    },
-    {
-      id: "done",
-      title: "Done",
-      tasks: tasks.filter((task) => task.status === "done"),
-    },
-    {
-      id: "overdue",
-      title: "Overdue",
-      tasks: tasks.filter((task) => task.status === "overdue"),
-    },
-  ];
-
-  const onDragStart = (event: DragStartEvent) => {
+  const handleDragstart = (event: DragStartEvent) => {
     const { active } = event;
-    setActiveId(active.id);
-  };
 
-  const onDragMove = (event: DragMoveEvent) => {
-    const { active, over, collisions } = event;
-    const activeColumn = columns.find((column: columnType) =>
-      column.tasks.find((task) => task.id === active.id)
-    );
-    const overColumn = columns.find((column: columnType) =>
-      column.tasks.find((task) => task.id === over?.id)
-    );
-    const activeTask = tasks.find((task) => task.id === active.id);
-
-    const columnIdFromCollisions = collisions![0].id;
-
-    if (!columnIdFromCollisions) {
+    if (!active) {
       return;
     }
 
-    if (active.id !== over?.id) {
-      if (activeColumn?.id !== overColumn?.id) {
-        //change status if dragging over different column that has a task
-        if (overColumn && overColumn.tasks.length > 0) {
-          if (activeTask && overColumn) {
-            if (overColumn === undefined) {
-              return;
-            } else {
-              changeTaskStatus(
-                activeTask.id,
-                overColumn.id as "due" | "done" | "overdue"
-              );
-            }
-          }
-        } else {
-          //change status if dragging over a column that has no task
-          if (activeTask && columnIdFromCollisions) {
-            if (
-              columnIdFromCollisions === undefined ||
-              typeof columnIdFromCollisions !== "string"
-            ) {
-              return;
-            } else {
-              setOverId(columnIdFromCollisions);
-              if (columnIdFromCollisions !== "trash") {
-                changeTaskStatus(
-                  activeTask.id,
-                  columnIdFromCollisions as "due" | "done" | "overdue"
-                );
-              }
-            }
-          }
-        }
-      }
-    }
-  };
-
-  const onDragEnd = (event: DragEndEvent) => {
-    const { active, over, collisions } = event;
-    const activeColumn = columns.find((column: columnType) =>
-      column.tasks.find((task) => task.id === active.id)
-    );
-    const overColumn = columns.find((column: columnType) =>
-      column.tasks.find((task) => task.id === over?.id)
+    const columnActive = columns.find((column) =>
+      column.tasks.some((task) => task.id === active.id)
     );
 
-    //dragging over a column that has a task
-    if (active.id !== over?.id) {
-      if (activeColumn?.id === overColumn?.id) {
-        const activeTaskIndex = tasks.findIndex(
-          (task) => task.id === active.id
-        );
-
-        const overTaskIndex = tasks.findIndex((task) => task.id === over?.id);
-
-        if (!overTaskIndex || !activeTaskIndex) {
-          return;
-        } else {
-          const newTasks = arrayMove(tasks, activeTaskIndex, overTaskIndex);
-
-          setTasks(newTasks);
-        }
-      }
-
-      const columnIdFromCollisions = collisions![0].id;
-
-      if (columnIdFromCollisions === "trash") {
-        setTrashTaskId(active.id);
-      }
+    if (!columnActive) {
+      return;
     }
+
+    const taskActive = columnActive.tasks.find((task) => task.id === active.id);
+
+    if (!taskActive || !columnActive) {
+      return;
+    }
+
+    setActiveTask(taskActive);
+    setActiveColumn(columnActive);
   };
 
-  const onDragCancel = (event: DragCancelEvent) => {
+  const handleDragMove = (event: DragMoveEvent) => {
     const { collisions } = event;
 
-    const columnIdFromCollisions = collisions![0].id;
+    const overCollisionId = collisions![0].id;
 
-    if (!columnIdFromCollisions) {
+    if (overCollisionId === undefined) {
+      return;
+    }
+
+    if (!activeTask || !activeColumn) {
+      return;
+    }
+
+    //moving over other column
+    if (overCollisionId !== "trash") {
+      changeTaskStatus(
+        activeTask!.id,
+        overCollisionId as "due" | "done" | "overdue"
+      );
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over, collisions } = event;
+
+    if (!active || !over) {
+      return;
+    }
+
+    if (active.id === over!.id) {
+      return;
+    }
+
+    if (!collisions || !activeTask || !activeColumn) {
+      return;
+    }
+
+    const overCollisionId = collisions[0].id;
+
+    if (overCollisionId === undefined) {
+      return;
+    }
+
+    //moving over other column
+    if (active.id !== over.id && activeTask.status !== activeColumn.id) {
+      if (overCollisionId !== "trash") {
+        changeTaskStatus(
+          activeTask!.id,
+          overCollisionId as "due" | "done" | "overdue"
+        );
+        UpdateTasksFromServer(
+          activeTask!.id,
+          overCollisionId as "due" | "done" | "overdue"
+        );
+      }
+    }
+
+    if (overCollisionId === "trash") {
+      changeTaskStatus(activeTask!.id, activeColumn.id);
+      setOverId(overCollisionId);
+    }
+  };
+
+  const handleCancel = (event: DragCancelEvent) => {
+    const { active, over, collisions } = event;
+
+    if (!active || !over || !collisions) {
+      return;
+    }
+
+    if (!activeTask || !activeColumn) {
+      return;
+    }
+
+    if (active.id === over.id) {
       return;
     }
   };
 
   return (
     <DndContext
-      collisionDetection={closestCenter}
-      onDragStart={onDragStart}
-      onDragMove={onDragMove}
-      onDragEnd={onDragEnd}
-      onDragCancel={onDragCancel}
+      collisionDetection={closestCorners}
+      onDragStart={handleDragstart}
+      onDragMove={handleDragMove}
+      onDragEnd={handleDragEnd}
     >
       <div className="flex gap-4">
-        <SortableContext items={columns.map((column) => column.id)}>
-          {columns.map((column) => (
-            <TaskColumn key={column.id} column={column} />
-          ))}
-        </SortableContext>
+        {columns.map((column) => (
+          <TaskColumn key={column.id} column={column} />
+        ))}
         <DragToTrash />
       </div>
-      {createPortal(
-        <DragOverlay>
-          {acitveId ? (
-            <DraggleContainer
-              task={tasks.find((task) => task.id === acitveId) as GetTaskType}
-              className={
-                overId === "trash" ? "bg-red-100 border-red-300 border-2" : ""
-              }
-            />
-          ) : null}
-        </DragOverlay>,
-        document.body
-      )}
+      <DragOverlay adjustScale={false} className="">
+        {activeTask ? (
+          <DraggleContainer
+            task={activeTask}
+            className={
+              overId === "trash" ? "bg-red-100 border-red-300 border-2" : ""
+            }
+          />
+        ) : null}
+      </DragOverlay>
+
       <AlertDialog
-        open={trashTaskId !== null}
-        onOpenChange={() => setTrashTaskId(null)}
+        open={overId === "trash"}
+        onOpenChange={() => setOverId(null)}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Conformation?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Removing {tasks.find((task) => task.id === trashTaskId)?.name}
+            <AlertDialogTitle>Delete Conformation</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              Removing task{" "}
+              <strong className="text-black">"{activeTask?.name}"</strong> from
+              the server
             </AlertDialogDescription>
           </AlertDialogHeader>
+
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction>Continue</AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => RemoveTaskFromServer(activeTask!.id)}
+            >
+              Continue
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -220,27 +196,23 @@ export default function DndTask() {
 }
 
 export function TaskColumn({ column }: { column: columnType }) {
-  const { attributes, setNodeRef, transform, transition } = useSortable({
+  const { setNodeRef, isOver } = useDroppable({
     id: column.id,
-    disabled: true,
+    data: { accepts: ["task"] },
   });
 
   return (
     <div
       ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-      }}
-      {...attributes}
-      className={cn("w-full flex flex-col gap-4 items-start cursor-default")}
+      className={cn(
+        "w-full h-fit flex flex-col gap-4 items-start cursor-default p-4 rounded-md",
+        isOver ? "bg-gradient-to-t from-gray-300 to-gray-100" : ""
+      )}
     >
-      <h1>{column.title}</h1>
-      <SortableContext items={column.tasks.map((task) => task.id)}>
-        {column.tasks.map((task) => (
-          <DraggleContainer key={task.id} task={task} />
-        ))}
-      </SortableContext>
+      <h1 className="text-2xl font-semibold">{column.title}</h1>
+      {column.tasks.map((task) => (
+        <DraggleContainer key={task.id} task={task} />
+      ))}
     </div>
   );
 }
@@ -252,14 +224,10 @@ export function DraggleContainer({
   task: GetTaskType;
   className?: string;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id, data: { type: "task" } });
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: task.id,
+    data: { type: "task" },
+  });
 
   return (
     <div
@@ -269,17 +237,16 @@ export function DraggleContainer({
         className && `${className}`
       )}
       ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-      }}
       {...attributes}
     >
       <div className="w-full">
         <TaskContainer task={task} />
       </div>
 
-      <GripVertical {...listeners} />
+      <GripVertical
+        {...listeners}
+        className="hover:scale-125 rounded-md p-1 cursor-move transition-all ease-in-out duration-200"
+      />
     </div>
   );
 }
@@ -296,7 +263,7 @@ export function DragToTrash() {
     <div
       ref={setNodeRef}
       className={cn(
-        "w-1/2 h-[20rem] bg-red-200 text-white rounded-md flex items-center justify-center",
+        "w-1/2 h-[20rem] bg-red-200 text-white rounded-md flex items-center justify-center mt-10",
         isOver ? "bg-red-300" : ""
       )}
     >
