@@ -34,7 +34,7 @@ export const CreateTaskService = async (
   }
 };
 
-export const GetAllTaskService = async (userId: string, token: string) => {
+export const GetAllTaskService = async (token: string) => {
   try {
     const res = await fetch(`/api/tasks`, {
       method: "GET",
@@ -61,7 +61,6 @@ export const GetAllTaskService = async (userId: string, token: string) => {
 
 export const GetTaskService = async (
   taskId: string,
-  userId: string,
   token: string
 ) => {
   try {

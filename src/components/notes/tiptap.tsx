@@ -12,6 +12,7 @@ export const Tiptap = forwardRef(
     {
       content,
       onChange,
+    // eslint-disable-next-line no-unused-vars
     }: { content: string; onChange: (richText: string) => void },
     ref: React.Ref<HTMLDivElement>
   ) => {

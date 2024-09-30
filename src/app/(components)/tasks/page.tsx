@@ -1,6 +1,6 @@
 
 import AddTask from "@/components/tasks/add-task";
-import { TasksList } from "@/components/tasks/tasks-list";
+import DndTask from "@/components/tasks/dnd-tasks";
 
 import React from "react";
 
@@ -12,7 +12,8 @@ export default function Tasks() {
         <AddTask />
       </div>
 
-      <TasksList />
+      {/* <TasksList /> */}
+      <DndTask />
     </div>
   );
 }

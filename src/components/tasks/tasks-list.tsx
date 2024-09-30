@@ -27,7 +27,7 @@ export function TasksList() {
   const tasks = data ?? [];
 
   return (
-    <div className="grid grid-cols-3">
+    <div className="grid grid-cols-3 gap-5">
       <Tasks tasks={tasks.filter((task) => task.status === "due")} />
       <Tasks tasks={tasks.filter((task) => task.status === "done")} />
       <Tasks tasks={tasks.filter((task) => task.status === "overdue")} />
