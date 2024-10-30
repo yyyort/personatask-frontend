@@ -6,7 +6,6 @@ import {
 
 export const CreateTaskService = async (
   data: CreateTaskType,
-  userId: string,
   token: string
 ) => {
   try {
@@ -118,6 +117,10 @@ export const UpdateTaskService = async (
   id: number,
   data: UpdateTaskType
 ) => {
+  if (token === "") {
+    throw new Error("Token not found");
+  }
+
   try {
     const res = await fetch(`/api/tasks/${id}`, {
       method: "PUT",
@@ -133,6 +136,7 @@ export const UpdateTaskService = async (
       const errorMessage = await res.json();
       throw new Error(errorMessage.message);
     }
+
   } catch (error: unknown) {
     console.error(error);
     throw error;

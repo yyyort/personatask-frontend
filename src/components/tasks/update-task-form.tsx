@@ -23,6 +23,11 @@ import { useToast } from "@/hooks/use-toast";
 import { UpdateTaskService } from "@/service/taskService";
 import { useAuthStore } from "@/state/authState";
 import { useQueryClient } from "@tanstack/react-query";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { cn } from "@/lib/utils";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "../ui/calendar";
+import { format } from "date-fns";
 
 export default function UpdateTaskForm({ task }: { task: GetTaskType }) {
   const queryClient = useQueryClient();
@@ -35,7 +40,7 @@ export default function UpdateTaskForm({ task }: { task: GetTaskType }) {
       name: task.name,
       description: task.description,
       status: task.status,
-      timeTodo: task.timeTodo,
+      timeTodo: task.timeTodo!.toString(),
       deadline: task.deadline,
     },
   });
@@ -43,7 +48,6 @@ export default function UpdateTaskForm({ task }: { task: GetTaskType }) {
   const onSubmit: SubmitHandler<UpdateTaskType> = async (formData) => {
     try {
       await UpdateTaskService(
-        auth.user.id,
         auth.token,
         task.id,
         formData
@@ -119,7 +123,7 @@ export default function UpdateTaskForm({ task }: { task: GetTaskType }) {
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 justify-center items-center">
           {/* time todo field */}
           <FormField
             control={form.control}
@@ -130,32 +134,49 @@ export default function UpdateTaskForm({ task }: { task: GetTaskType }) {
                 <FormLabel>time todo</FormLabel>
                 <FormControl>
                   <Input
-                    type="datetime-local"
+                    type="time"
                     {...field}
                     value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                  />
+                    />
                 </FormControl>
               </FormItem>
             )}
           />
 
-          {/* deadline */}
+          {/* deadline field */}
           <FormField
             control={form.control}
             name="deadline"
-            disabled={form.formState.isSubmitting}
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>deadline</FormLabel>
-                <FormControl>
-                  <Input
-                    type="datetime-local"
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                  />
-                </FormControl>
+              <FormItem className="flex flex-col gap-2">
+                <FormLabel className="pt-2">Date of birth</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ?? undefined}
+                      onSelect={field.onChange}
+                    />
+                  </PopoverContent>
+                </Popover>
               </FormItem>
             )}
           />

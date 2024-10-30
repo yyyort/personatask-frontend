@@ -1,5 +1,5 @@
 "use client";
-import { CreateTaskSchema, CreateTaskType } from "@/model/tasks.model";
+import { FormCreateTaskSchema, FormCreateTaskType } from "@/model/tasks.model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -15,18 +15,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
-import { CreateTaskService } from "@/service/taskService";
-import { useAuthStore } from "@/state/authState";
+import UseTask from "@/hooks/use-task";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "../ui/calendar";
 
 export default function AddTaskForm() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const auth = useAuthStore((state) => state.auth);
+  const { AddTaskToServer } = UseTask();
 
-  const form = useForm<z.infer<typeof CreateTaskSchema>>({
-    resolver: zodResolver(CreateTaskSchema),
+  const form = useForm<z.infer<typeof FormCreateTaskSchema>>({
+    resolver: zodResolver(FormCreateTaskSchema),
     defaultValues: {
       name: "",
       description: "",
@@ -34,30 +34,27 @@ export default function AddTaskForm() {
     },
   });
 
-  const onSubmit: SubmitHandler<CreateTaskType> = (formData) => {
+  const onSubmit: SubmitHandler<FormCreateTaskType> = (formData) => {
     try {
-      //create task
-      CreateTaskService(formData, auth.user.id, auth.token);
+      console.log("form data", formData);
 
-      toast({
-        title: "Task Added",
-        description: "Task has been added successfully",
+      //parse time todo and dealine to data
+      const timeTodo = formData.timeTodo
+        ? new Date(formData.timeTodo).toTimeString()
+        : null;
+      const deadline = formData.deadline ? new Date(formData.deadline) : null;
+
+      console.log(timeTodo);
+
+      AddTaskToServer({
+        ...formData,
+        status: formData.status ?? "due",
+        timeTodo: timeTodo ? new Date(timeTodo) : null,
+        deadline,
       });
-
-      //reset form
       form.reset();
-
-      //refetch tasks
-      queryClient.invalidateQueries({
-        queryKey: ["tasks"],
-      });
-    } catch (error: unknown) {
+    } catch (error) {
       console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Task Add Failed",
-        description: (error as Error).message,
-      });
     }
   };
 
@@ -110,43 +107,66 @@ export default function AddTaskForm() {
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 justify-center items-center">
           {/* time todo field */}
           <FormField
             control={form.control}
             name="timeTodo"
             disabled={form.formState.isSubmitting}
+            rules={{
+              
+            }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>time todo</FormLabel>
                 <FormControl>
                   <Input
-                    type="datetime-local"
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
+                    type="time"
+                    value={field.value ? field.value.toISOString().substring(11, 16) : ""}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
                   />
                 </FormControl>
               </FormItem>
             )}
           />
 
-          {/* deadline */}
+          {/* deadline field */}
           <FormField
             control={form.control}
             name="deadline"
-            disabled={form.formState.isSubmitting}
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>deadline</FormLabel>
-                <FormControl>
-                  <Input
-                    type="datetime-local"
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                  />
-                </FormControl>
+              <FormItem className="flex flex-col gap-2">
+                <FormLabel className="pt-2">Date of birth</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ?? undefined}
+                      onSelect={field.onChange}
+                    />
+                  </PopoverContent>
+                </Popover>
               </FormItem>
             )}
           />

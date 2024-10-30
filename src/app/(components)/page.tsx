@@ -1,3 +1,5 @@
+import { Calendar } from "@/components/ui/calendar";
+
 export default function Home() {
   return (
     <div className="min-h-full min-w-full">
@@ -5,6 +7,7 @@ export default function Home() {
       <p className="text-lg">
         This is a simple app that you can use to manage your daily tasks.
       </p>
+      <Calendar/>
     </div>
   );
 }

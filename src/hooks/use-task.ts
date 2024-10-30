@@ -1,9 +1,15 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "./use-toast";
 import { useAuthStore } from "@/state/authState";
-import { DeleteTaskService, GetAllTaskService, UpdateTaskStatusService } from "@/service/taskService";
+import {
+  CreateTaskService,
+  DeleteTaskService,
+  GetAllTaskService,
+  UpdateTaskStatusService,
+} from "@/service/taskService";
 import { useEffect } from "react";
 import { columnType, useTasksStore } from "@/state/tasksState";
+import { CreateTaskType } from "@/model/tasks.model";
 
 export default function UseTask() {
   const queryClient = useQueryClient();
@@ -16,12 +22,12 @@ export default function UseTask() {
     queryFn: () => GetAllTaskService(auth.token),
     enabled: !!auth.token,
     retry: 4,
-    staleTime: Infinity
+    staleTime: Infinity,
   });
 
   useEffect(() => {
     if (data) {
-      const columns: columnType[]  = [
+      const columns: columnType[] = [
         {
           id: "due" as "due" | "done" | "overdue",
           title: "Due",
@@ -38,12 +44,39 @@ export default function UseTask() {
           tasks: data.filter((task) => task.status === "overdue"),
         },
       ];
-      
+
       setColumns(columns);
     }
   }, [data, setColumns]);
 
-  const UpdateTasksFromServer = async (id: number, status: "done" | "due" | "overdue") => {
+  const AddTaskToServer = async (data: CreateTaskType) => {
+    try {
+      await CreateTaskService(data, auth.token);
+
+      queryClient.invalidateQueries({
+        queryKey: ["tasks"],
+      });
+
+      toast({
+        title: "Task added",
+        description: "Task added",
+        variant: "default",
+      });
+
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Failed to add task",
+        description: "Failed to add task",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const UpdateTasksFromServer = async (
+    id: number,
+    status: "done" | "due" | "overdue"
+  ) => {
     try {
       UpdateTaskStatusService(auth.token, id, status);
 
@@ -56,7 +89,6 @@ export default function UseTask() {
         description: "Tasks updated",
         variant: "default",
       });
-
     } catch (error) {
       console.error(error);
       toast({
@@ -65,7 +97,7 @@ export default function UseTask() {
         variant: "destructive",
       });
     }
-  }
+  };
 
   const RemoveTaskFromServer = async (id: number) => {
     try {
@@ -80,7 +112,6 @@ export default function UseTask() {
         description: "Task removed",
         variant: "default",
       });
-
     } catch (error) {
       console.error(error);
       toast({
@@ -89,7 +120,7 @@ export default function UseTask() {
         variant: "destructive",
       });
     }
-  }
+  };
 
-  return { data, UpdateTasksFromServer, RemoveTaskFromServer };
+  return { data, AddTaskToServer, UpdateTasksFromServer, RemoveTaskFromServer };
 }

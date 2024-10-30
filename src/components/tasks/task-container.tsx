@@ -24,17 +24,20 @@ export function TaskContainer({ task }: { task: GetTaskType }) {
   const queryClient = useQueryClient();
   const auth = useAuthStore((state) => state.auth);
 
-  const updateStatus = (status: "done" | "due" | "overdue") => {
+  const updateStatus = async (status: "done" | "due" | "overdue") => {
     try {
-      UpdateTaskStatusService(auth.user.id, auth.token, task.id, status);
+      await UpdateTaskStatusService(auth.token, task.id, status);
+
       toast({
         title: "Task Updated",
         description: "Task has been updated successfully",
       });
+      
       queryClient.invalidateQueries({
         queryKey: ["tasks"],
       });
     } catch (error: unknown) {
+
       console.error(error);
       toast({
         variant: "destructive",
@@ -46,7 +49,7 @@ export function TaskContainer({ task }: { task: GetTaskType }) {
 
   return (
     <>
-      <div className="flex flex-row items-center gap-2 bg-slate-100 px-2 py-1 rounded-md h-12 overflow-hidden hover:bg-slate-200">
+      <div className="group flex flex-row items-center gap-2 bg-slate-100 px-2 py-1 rounded-md h-12 overflow-hidden hover:bg-slate-200">
         <div className="flex items-center">
           <Checkbox
             className="hover:bg-slate-800"
@@ -73,8 +76,8 @@ export function TaskContainer({ task }: { task: GetTaskType }) {
 
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="ghost" size="sm" className="ml-auto">
-              <Eye size={20} />
+            <Button variant="ghost" size="sm" className="ml-auto hidden group-hover:flex">
+              <Eye size={20} className=""/>
             </Button>
           </DialogTrigger>
 
